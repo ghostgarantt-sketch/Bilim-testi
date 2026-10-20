@@ -1,0 +1,128 @@
+
+<!DOCTYPE html>
+<html lang="kaa">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bilim testi</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f0f4fa;font-family:Arial,sans-serif;color:#172033}
+header{background:#173b75;color:white;text-align:center;padding:24px 14px}
+header h1{margin:0 0 8px;font-size:25px}
+header p{margin:0;color:#dce8ff}
+main{max-width:700px;margin:20px auto;padding:0 12px}
+.info{background:white;border-radius:12px;padding:15px;margin-bottom:14px}
+.progress{height:8px;background:#e2e8f0;border-radius:10px;overflow:hidden;margin-top:10px}
+#bar{height:100%;width:0;background:#2878ed;transition:.2s}
+.card{background:white;padding:20px;border-radius:14px;box-shadow:0 3px 12px #17203312}
+#number{color:#2878ed;font-weight:bold}
+#question{font-size:20px;line-height:1.45}
+.option{display:block;padding:13px;margin:10px 0;border:2px solid #d9e1ed;border-radius:10px;cursor:pointer}
+.option:has(input:checked){border-color:#2878ed;background:#edf4ff}
+.option input{margin-right:8px}
+button{border:0;border-radius:10px;padding:13px 18px;font-size:16px;font-weight:bold;cursor:pointer}
+#next{background:#173b75;color:white;width:100%;margin-top:12px}
+#next:disabled{opacity:.45;cursor:not-allowed}
+#feedback{font-weight:bold;margin-top:12px}
+#result{text-align:center}
+.hidden{display:none}
+.small{font-size:14px;color:#64748b}
+</style>
+</head>
+<body>
+<header>
+<h1>📚 Bilim testi</h1>
+<p>6-klass · Áyyemgi dúńya tariyxı · 1–3-temalar</p>
+</header>
+<main>
+<div class="info">
+  <div id="counter">1 / 10-soraw</div>
+  <div class="progress"><div id="bar"></div></div>
+  <p class="small">Hár bir durıs juwap ushın 1 ball.</p>
+</div>
+<section class="card" id="quiz">
+<div id="number">1-SORAW</div>
+<h2 id="question"></h2>
+<div id="options"></div>
+<div id="feedback"></div>
+<button id="next" disabled>Juwaptı tekseriw</button>
+</section>
+<section class="card hidden" id="result">
+<h2>Test juwmaǵı 🎉</h2>
+<h1 id="score"></h1>
+<p id="message"></p>
+<button id="restart" style="background:#173b75;color:white">Qaytadan islew</button>
+</section>
+</main>
+<script>
+const questions = [
+{q:"Orta Aziya tariyxı boyınsha eń áyyemgi jazba derek qaysı?",o:["Behistun jazıwları","«Avesto»","Gerodottıń «Tariyx» shıǵarması","Strabonnıń «Geografiya» shıǵarması"],a:1},
+{q:"Áyyemgi adamlardıń súyek qaldıqların izertlep, sırtqı kórinisin úyrenetuǵın pán qaysı?",o:["Arxeologiya","Etnografiya","Antropologiya","Numizmatika"],a:2},
+{q:"Etnograflar tiykarınan neni úyrenedi?",o:["Áyyemgi teńgelerdi","Adamlardıń súyek qaldıqların","Jer astındaǵı imaratlardı","Xalıqlardıń úrp-ádetleri hám mádeniyatın"],a:3},
+{q:"Dara I buyrıǵı menen jazılǵan Behistun jazıwları qaysı tillerde bolǵan?",o:["Grek, latın hám mısr","Áyyemgi parsı, elam hám bobıl","Parsı, grek hám hind","Bobıl, latın hám aramey"],a:1},
+{q:"Gerodot qaysı shıǵarmanı jazǵan?",o:["«Geografiya»","«Avesto»","«Tariyx»","«Aleksandr anabasisi»"],a:2},
+{q:"Eń áyyemgi jámáátlik dúzimge tán belgi qaysı?",o:["Jeke adamlar barlıq jerdi iyelegen","Adamlar ortaq jámáát bolıp miynet etken","Zawıt-fabrikalar isleǵen","Barlıq jerde jazba nızamlar bolǵan"],a:1},
+{q:"Miynet quralları hám gúlal ıdıslar tariyxıy dereklerdiń qaysı túrine kiredi?",o:["Awızeki derek","Jazba derek","Materiallıq derek","Folklorlıq derek"],a:2},
+{q:"Strabon Orta Aziya haqqındaǵı maǵlıwmatlardı qaysı shıǵarmasında keltirgen?",o:["«Tariyx»","«Geografiya»","«Avesto»","«Marhumlar kitabı»"],a:1},
+{q:"Urıwshılıq jámiyetin úyreniwde qaysı dereklerdi birge salıstırıw paydalı?",o:["Tek bir áńgimeni","Tek házirgi kartanı","Tek patshalar atların","Miynet quralları, turar jay qaldıqları hám ádetler haqqındaǵı maǵlıwmatlardı"],a:3},
+{q:"Arxeologiyalıq qazıwlar menen jazba dereklerdi birge paydalanıwdıń tiykarǵı sebebi ne?",o:["Bir derek túri hárdayım qáte bolǵanı ushın","Tariyxıy maǵlıwmatlardı salıstırıp, ótken dáwirdi anıǵıraq tiklew ushın","Tek jazıwdı oqıw qıyın bolǵanı ushın","Buyımlardıń bahasın anıqlaw ushın"],a:1}
+];
+let current=0, answers=[], checked=false;
+const $=id=>document.getElementById(id);
+function render(){
+ const q=questions[current];
+ $("counter").textContent=`${current+1} / ${questions.length}-soraw`;
+ $("bar").style.width=(current/questions.length*100)+"%";
+ $("number").textContent=`${current+1}-SORAW`;
+ $("question").textContent=q.q;
+ $("options").innerHTML="";
+ $("feedback").textContent="";
+ checked=false;
+ q.o.forEach((opt,i)=>{
+  const label=document.createElement("label");
+  label.className="option";
+  const radio=document.createElement("input");
+  radio.type="radio";radio.name="answer";radio.value=i;
+  radio.addEventListener("change",()=>{$("next").disabled=false});
+  label.append(radio,document.createTextNode(" "+["A","B","C","D"][i]+") "+opt));
+  $("options").appendChild(label);
+ });
+ $("next").disabled=true;
+ $("next").textContent="Juwaptı tekseriw";
+}
+$("next").addEventListener("click",()=>{
+ if(!checked){
+  const chosen=document.querySelector('input[name="answer"]:checked');
+  if(!chosen)return;
+  answers[current]=Number(chosen.value);
+  checked=true;
+  const correct=answers[current]===questions[current].a;
+  $("feedback").textContent=correct?"✅ Durıs juwap!":"❌ Durıs juwap: "+["A","B","C","D"][questions[current].a];
+  $("feedback").style.color=correct?"#16803d":"#c62828";
+  document.querySelectorAll('input[name="answer"]').forEach(x=>x.disabled=true);
+  $("next").textContent=current===questions.length-1?"Nátiyjeni kóriw":"Keyingi soraw →";
+ }else{
+  if(current<questions.length-1){current++;render()}
+  else showResult();
+ }
+});
+function showResult(){
+ const total=answers.filter((a,i)=>a===questions[i].a).length;
+ $("quiz").classList.add("hidden");
+ $("result").classList.remove("hidden");
+ $("bar").style.width="100%";
+ $("counter").textContent="Test tamamlandı";
+ $("score").textContent=`${total} / ${questions.length} ball`;
+ $("message").textContent=total>=8?"Jaqsı nátiyje!":total>=5?"Jaman emes, taǵı tayarlan!":"Taǵı bir márte oqıp, qayta sınap kór!";
+}
+$("restart").addEventListener("click",()=>{
+ current=0;answers=[];
+ $("result").classList.add("hidden");
+ $("quiz").classList.remove("hidden");
+ render();
+});
+render();
+</script>
+</body>
+</html>
